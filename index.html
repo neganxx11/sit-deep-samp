@@ -372,6 +372,73 @@
             font-size: 20px;
         }
 
+        /* Protection Styles */
+        .protected-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                rgba(255, 0, 0, 0.05),
+                rgba(255, 0, 0, 0.05) 10px,
+                rgba(0, 0, 0, 0.05) 10px,
+                rgba(0, 0, 0, 0.05) 20px
+            );
+            z-index: 99999;
+            pointer-events: none;
+            display: none;
+        }
+        
+        .watermark {
+            position: fixed;
+            color: rgba(255, 0, 0, 0.2);
+            font-size: 24px;
+            font-family: 'Bungee', cursive;
+            z-index: 99998;
+            pointer-events: none;
+            user-select: none;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+        
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        .no-drag {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+        }
+        
+        .no-context {
+            context-menu: none;
+        }
+        
+        .protection-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            color: red;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            z-index: 100000;
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
         @media (max-width: 768px) {
             .splash-logo {
                 font-size: 3rem;
@@ -425,11 +492,22 @@
             .footer-desc {
                 font-size: 0.9rem;
             }
+            
+            .watermark {
+                font-size: 16px;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-<body>
+<body class="no-select no-context">
+    <!-- Protection Elements -->
+    <div class="protected-overlay" id="protectedOverlay"></div>
+    <div class="watermark" id="dynamicWatermark"></div>
+    <div class="protection-message" id="protectionMessage">
+        OUTIL DE CAPTURE DÉTECTÉ - ACCÈS REFUSÉ
+    </div>
+
     <!-- Splash Screen -->
     <div class="splash-screen">
         <div class="splash-logo">DEEP SAMP</div>
@@ -439,7 +517,7 @@
     <!-- Main Content -->
     <div class="main-content">
         <audio id="backgroundMusic" loop>
-            <source src="https://cdn.discordapp.com/attachments/1383334140111224925/1383396271041019974/El_Azhar_-_El_Djihad_Slowed_Reverb_nasheed.mp3?ex=684ea3ad&is=684d522d&hm=f926093f6e7157e98cbd665b3b4a210e72a892f08206218684bea39e7001920d&" type="audio/mpeg">
+            <source src="https://cdn.discordapp.com/attachments/1383334140111224925/1383420649913057351/Dark_web_music_deep_web.mp3?ex=684eba61&is=684d68e1&hm=31568b8d3685e81c0bd8cff53b59aaeaf0a9d6ec50f3a88e54fe09cbd2e40983&" type="audio/mpeg">
         </audio>
 
         <div class="audio-player" id="audioControl">
@@ -451,7 +529,6 @@
         </header>
 
         <div class="gallery">
-            <!-- Photo cards remain the same as before -->
             <!-- Photo 1 -->
             <div class="photo-card" style="--order: 1;">
                 <div class="photo-img-container">
@@ -758,7 +835,179 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Audio functionality
+            // ==================== PROTECTION SYSTEM ====================
+            const protectedOverlay = document.getElementById('protectedOverlay');
+            const dynamicWatermark = document.getElementById('dynamicWatermark');
+            const protectionMessage = document.getElementById('protectionMessage');
+            
+            // Activate protection immediately
+            activateProtection();
+            
+            function activateProtection() {
+                // Show protection overlay
+                protectedOverlay.style.display = 'block';
+                
+                // Add dynamic watermark with user-specific info
+                updateWatermark();
+                
+                // Prevent right-click
+                document.addEventListener('contextmenu', preventDefaultAction);
+                
+                // Block keyboard shortcuts
+                document.addEventListener('keydown', blockKeyboardShortcuts);
+                
+                // Prevent image drag & drop
+                disableImageDrag();
+                
+                // Detect screen capture attempts
+                detectScreenCapture();
+                
+                // Add more protection layers
+                addExtraProtectionLayers();
+            }
+            
+            function updateWatermark() {
+                // Generate fake unique identifier (in real case, use server-side data)
+                const sessionId = Math.random().toString(36).substr(2, 9).toUpperCase();
+                const timestamp = new Date().toLocaleString();
+                dynamicWatermark.textContent = `DEEP SAMP © ${sessionId} | ${timestamp}`;
+                
+                // Move watermark randomly every 2 seconds
+                setInterval(() => {
+                    const x = Math.random() * (window.innerWidth - 300);
+                    const y = Math.random() * (window.innerHeight - 50);
+                    dynamicWatermark.style.left = `${x}px`;
+                    dynamicWatermark.style.top = `${y}px`;
+                    dynamicWatermark.style.color = `rgba(255, 0, 0, ${0.1 + Math.random() * 0.2})`;
+                    dynamicWatermark.style.fontSize = `${20 + Math.random() * 10}px`;
+                }, 2000);
+            }
+            
+            function preventDefaultAction(e) {
+                e.preventDefault();
+                showProtectionMessage('Capture d\'écran non autorisée !');
+                return false;
+            }
+            
+            function blockKeyboardShortcuts(e) {
+                // Block Print Screen, Ctrl+P, Ctrl+S, etc.
+                const blockedKeys = ['PrintScreen', 'F12', 'F11', 'F10'];
+                const blockedCombos = [
+                    { ctrl: true, key: 'p' }, // Print
+                    { ctrl: true, key: 's' }, // Save
+                    { ctrl: true, shift: true, key: 'i' }, // DevTools
+                    { ctrl: true, shift: true, key: 'j' }, // DevTools
+                    { ctrl: true, shift: true, key: 'c' } // DevTools
+                ];
+                
+                // Check single keys
+                if (blockedKeys.includes(e.key)) {
+                    e.preventDefault();
+                    showProtectionMessage(`Touche ${e.key} bloquée !`);
+                    return false;
+                }
+                
+                // Check key combinations
+                for (const combo of blockedCombos) {
+                    if ((!combo.ctrl || e.ctrlKey) &&
+                        (!combo.shift || e.shiftKey) &&
+                        e.key.toLowerCase() === combo.key.toLowerCase()) {
+                        e.preventDefault();
+                        showProtectionMessage('Combinaison de touches bloquée !');
+                        return false;
+                    }
+                }
+            }
+            
+            function disableImageDrag() {
+                const images = document.querySelectorAll('img');
+                images.forEach(img => {
+                    img.setAttribute('draggable', 'false');
+                    img.addEventListener('dragstart', (e) => {
+                        e.preventDefault();
+                        return false;
+                    });
+                });
+            }
+            
+            function detectScreenCapture() {
+                // Detect screen size changes (might indicate screenshot tool)
+                let lastWidth = window.innerWidth;
+                let lastHeight = window.innerHeight;
+                
+                window.addEventListener('resize', () => {
+                    if (window.innerWidth !== lastWidth || window.innerHeight !== lastHeight) {
+                        showProtectionMessage('Tentative de capture détectée !');
+                    }
+                    lastWidth = window.innerWidth;
+                    lastHeight = window.innerHeight;
+                });
+                
+                // Detect fullscreen mode (might indicate recording)
+                document.addEventListener('fullscreenchange', checkFullScreen);
+                document.addEventListener('webkitfullscreenchange', checkFullScreen);
+                document.addEventListener('mozfullscreenchange', checkFullScreen);
+                
+                function checkFullScreen() {
+                    if (document.fullscreenElement || 
+                        document.webkitFullscreenElement || 
+                        document.mozFullScreenElement) {
+                        showProtectionMessage('Mode plein écran non autorisé !');
+                    }
+                }
+                
+                // Try to detect common screenshot extensions
+                const extensions = [
+                    'screencapture',
+                    'lightshot',
+                    'nimbus',
+                    'awesomescreenshot',
+                    'fireshot'
+                ];
+                
+                try {
+                    for (let ext of extensions) {
+                        if (window[ext] || document[ext]) {
+                            showProtectionMessage('Extension de capture détectée !');
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Security check failed:', e);
+                }
+            }
+            
+            function addExtraProtectionLayers() {
+                // Disable console functions
+                console.log = function() {};
+                console.warn = function() {};
+                console.error = function() {};
+                
+                // Prevent opening developer tools
+                Object.defineProperty(document, 'allowViewSource', {
+                    get: function() { return false; },
+                    set: function() {}
+                });
+                
+                // Periodically check for dev tools
+                setInterval(() => {
+                    if (window.outerWidth - window.innerWidth > 100 || 
+                        window.outerHeight - window.innerHeight > 100) {
+                        showProtectionMessage('Outils développeur détectés !');
+                    }
+                }, 1000);
+            }
+            
+            function showProtectionMessage(msg) {
+                protectionMessage.textContent = msg;
+                protectionMessage.style.display = 'flex';
+                
+                setTimeout(() => {
+                    protectionMessage.style.display = 'none';
+                }, 3000);
+            }
+            
+            // ==================== AUDIO FUNCTIONALITY ====================
             const backgroundMusic = document.getElementById('backgroundMusic');
             const audioControl = document.getElementById('audioControl');
             let isPlaying = false;
@@ -781,7 +1030,7 @@
                 }
             };
 
-            // Play music when user interacts with the page (to bypass autoplay restrictions)
+            // Play music when user interacts with the page
             const handleFirstInteraction = () => {
                 if (!isPlaying) {
                     playMusic();
@@ -807,7 +1056,7 @@
                 }
             });
 
-            // Image gallery modal functionality
+            // ==================== IMAGE GALLERY MODAL ====================
             const images = document.querySelectorAll('.photo-img');
             const modal = document.getElementById('imageModal');
             const modalImg = document.getElementById('zoomedImage');
@@ -870,6 +1119,53 @@
                 }
             });
         });
+        
+        // ==================== ADVANCED PROTECTION ====================
+        // Protection against console opening
+        (function() {
+            function blockConsoleOpen(e) {
+                const blockedKeys = ['F12', 'F11', 'F10'];
+                const blockedCombos = [
+                    { ctrl: true, shift: true, key: 'i' },
+                    { ctrl: true, shift: true, key: 'j' },
+                    { ctrl: true, shift: true, key: 'c' },
+                    { ctrl: true, shift: true, key: 'u' }
+                ];
+                
+                // Check single keys
+                if (blockedKeys.includes(e.key)) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // Check key combinations
+                for (const combo of blockedCombos) {
+                    if ((!combo.ctrl || e.ctrlKey) &&
+                        (!combo.shift || e.shiftKey) &&
+                        e.key.toLowerCase() === combo.key.toLowerCase()) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            }
+            
+            document.addEventListener('keydown', blockConsoleOpen);
+            
+            // Disable console functions
+            console.log = function() {};
+            console.warn = function() {};
+            console.error = function() {};
+            
+            // Prevent frame busting
+            if (window.top !== window.self) {
+                window.top.location = window.self.location;
+            }
+            
+            // Prevent cache
+            window.onbeforeunload = function() {
+                return "Vous ne pouvez pas quitter cette page !";
+            };
+        })();
     </script>
 </body>
 </html>
