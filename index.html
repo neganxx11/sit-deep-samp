@@ -439,6 +439,36 @@
             padding: 20px;
         }
 
+        /* Black screen overlay for recording protection */
+        .recording-protection {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 100001;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .recording-message {
+            color: red;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Bungee', cursive;
+        }
+        
+        .recording-watermark {
+            color: rgba(255, 0, 0, 0.5);
+            font-size: 1.5rem;
+            text-align: center;
+            font-family: 'Urbanist', sans-serif;
+        }
+
         @media (max-width: 768px) {
             .splash-logo {
                 font-size: 3rem;
@@ -496,6 +526,14 @@
             .watermark {
                 font-size: 16px;
             }
+            
+            .recording-message {
+                font-size: 1.5rem;
+            }
+            
+            .recording-watermark {
+                font-size: 1rem;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -506,6 +544,12 @@
     <div class="watermark" id="dynamicWatermark"></div>
     <div class="protection-message" id="protectionMessage">
         OUTIL DE CAPTURE DÉTECTÉ - ACCÈS REFUSÉ
+    </div>
+    
+    <!-- Recording Protection Overlay -->
+    <div class="recording-protection" id="recordingProtection">
+        <div class="recording-message">ENREGISTREMENT OU CAPTURE D'ÉCRAN DÉTECTÉ</div>
+        <div class="recording-watermark" id="recordingWatermark"></div>
     </div>
 
     <!-- Splash Screen -->
@@ -839,6 +883,8 @@
             const protectedOverlay = document.getElementById('protectedOverlay');
             const dynamicWatermark = document.getElementById('dynamicWatermark');
             const protectionMessage = document.getElementById('protectionMessage');
+            const recordingProtection = document.getElementById('recordingProtection');
+            const recordingWatermark = document.getElementById('recordingWatermark');
             
             // Activate protection immediately
             activateProtection();
@@ -864,6 +910,9 @@
                 
                 // Add more protection layers
                 addExtraProtectionLayers();
+                
+                // Detect recording attempts
+                detectRecording();
             }
             
             function updateWatermark() {
@@ -871,6 +920,7 @@
                 const sessionId = Math.random().toString(36).substr(2, 9).toUpperCase();
                 const timestamp = new Date().toLocaleString();
                 dynamicWatermark.textContent = `DEEP SAMP © ${sessionId} | ${timestamp}`;
+                recordingWatermark.textContent = `COPYRIGHT VIOLATION | ${sessionId} | ${timestamp}`;
                 
                 // Move watermark randomly every 2 seconds
                 setInterval(() => {
@@ -897,7 +947,9 @@
                     { ctrl: true, key: 's' }, // Save
                     { ctrl: true, shift: true, key: 'i' }, // DevTools
                     { ctrl: true, shift: true, key: 'j' }, // DevTools
-                    { ctrl: true, shift: true, key: 'c' } // DevTools
+                    { ctrl: true, shift: true, key: 'c' }, // DevTools
+                    { ctrl: true, shift: true, key: '4' }, // Windows + Shift + S
+                    { meta: true, shift: true, key: '4' } // Mac screenshot
                 ];
                 
                 // Check single keys
@@ -911,9 +963,10 @@
                 for (const combo of blockedCombos) {
                     if ((!combo.ctrl || e.ctrlKey) &&
                         (!combo.shift || e.shiftKey) &&
+                        (!combo.meta || e.metaKey) &&
                         e.key.toLowerCase() === combo.key.toLowerCase()) {
                         e.preventDefault();
-                        showProtectionMessage('Combinaison de touches bloquée !');
+                        showRecordingProtection();
                         return false;
                     }
                 }
@@ -975,6 +1028,54 @@
                 } catch (e) {
                     console.error('Security check failed:', e);
                 }
+            }
+            
+            function detectRecording() {
+                // Detect screen sharing or recording
+                if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                    // Override getDisplayMedia to prevent screen sharing
+                    navigator.mediaDevices.getDisplayMedia = function() {
+                        showRecordingProtection();
+                        return Promise.reject(new Error('Screen sharing is not allowed'));
+                    };
+                }
+                
+                // Detect iframe embedding (common for stream previews)
+                if (window.self !== window.top) {
+                    showRecordingProtection();
+                }
+                
+                // Periodically check for recording software
+                setInterval(() => {
+                    // Check for OBS virtual camera
+                    if (document.querySelector('canvas') && 
+                        document.querySelector('canvas').getContext('webgl')) {
+                        const debugInfo = document.querySelector('canvas').getContext('webgl').getExtension('WEBGL_debug_renderer_info');
+                        if (debugInfo) {
+                            const renderer = document.querySelector('canvas').getContext('webgl').getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                            if (renderer.includes('OBS') || renderer.includes('Capture') || renderer.includes('Virtual')) {
+                                showRecordingProtection();
+                            }
+                        }
+                    }
+                    
+                    // Check for recording indicators
+                    if (window.outerWidth - window.innerWidth > 100 || 
+                        window.outerHeight - window.innerHeight > 100) {
+                        showRecordingProtection();
+                    }
+                }, 1000);
+            }
+            
+            function showRecordingProtection() {
+                recordingProtection.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    recordingProtection.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }, 5000);
             }
             
             function addExtraProtectionLayers() {
@@ -1129,7 +1230,9 @@
                     { ctrl: true, shift: true, key: 'i' },
                     { ctrl: true, shift: true, key: 'j' },
                     { ctrl: true, shift: true, key: 'c' },
-                    { ctrl: true, shift: true, key: 'u' }
+                    { ctrl: true, shift: true, key: 'u' },
+                    { meta: true, shift: true, key: '4' }, // Mac screenshot
+                    { meta: true, shift: true, key: '3' } // Mac screenshot
                 ];
                 
                 // Check single keys
@@ -1142,6 +1245,7 @@
                 for (const combo of blockedCombos) {
                     if ((!combo.ctrl || e.ctrlKey) &&
                         (!combo.shift || e.shiftKey) &&
+                        (!combo.meta || e.metaKey) &&
                         e.key.toLowerCase() === combo.key.toLowerCase()) {
                         e.preventDefault();
                         return false;
@@ -1164,6 +1268,18 @@
             // Prevent cache
             window.onbeforeunload = function() {
                 return "Vous ne pouvez pas quitter cette page !";
+            };
+            
+            // Block screen capture API
+            if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+                navigator.mediaDevices.getDisplayMedia = function() {
+                    return Promise.reject(new Error('Screen capture is not allowed'));
+                };
+            }
+            
+            // Block print
+            window.onbeforeprint = function() {
+                return false;
             };
         })();
     </script>
