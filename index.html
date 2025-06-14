@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEEP SAMP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;700&family=Bungee&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff0000;
+            --dark: #000000;
+            --light: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Urbanist', sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            overflow-x: hidden;
+        }
+
+        /* Splash Screen Animation */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            animation: fadeOut 0.5s ease-in-out 1.5s forwards;
+        }
+
+        .splash-logo {
+            font-family: 'Bungee', cursive;
+            font-size: 5rem;
+            letter-spacing: 5px;
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: scale(0.8);
+            animation: logoEntrance 1s ease-out 0.3s forwards;
+        }
+
+        .welcome-text {
+            font-size: 1.5rem;
+            color: var(--light);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: textEntrance 0.8s ease-out 0.8s forwards;
+        }
+
+        @keyframes logoEntrance {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            70% {
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes textEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* Main Content */
+        .main-content {
+            opacity: 0;
+            animation: contentFadeIn 0.5s ease-out 2s forwards;
+        }
+
+        @keyframes contentFadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .logo {
+            font-family: 'Bungee', cursive;
+            font-size: 3.5rem;
+            letter-spacing: 3px;
+            color: var(--primary);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: logoGlow 2s infinite alternate;
+        }
+
+        @keyframes logoGlow {
+            0% {
+                text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            }
+            100% {
+                text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 30px rgba(255, 153, 0, 0.4);
+            }
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .photo-card {
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 5px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            aspect-ratio: 1/1;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: cardEntrance 0.5s ease-out forwards;
+            animation-delay: calc(var(--order) * 0.1s + 2s);
+        }
+
+        @keyframes cardEntrance {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .photo-img-container {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .photo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .photo-card:hover .photo-img {
+            transform: scale(1.05);
+        }
+
+        .photo-info {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            border-top: 1px solid #333;
+        }
+
+        .photo-title {
+            font-family: 'Bungee', cursive;
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        .photo-desc {
+            font-size: 0.9rem;
+            color: #ccc;
+            line-height: 1.4;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            overflow: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+        }
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            max-width: 90%;
+            max-height: 90vh;
+            margin: 2% auto;
+            background: #111;
+            border: 3px solid var(--primary);
+            border-radius: 5px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-img-container {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-height: 70vh;
+        }
+
+        .modal-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-info {
+            padding: 1.5rem;
+            border-top: 2px solid var(--primary);
+        }
+
+        .modal-title {
+            font-family: 'Bungee', cursive;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .modal-desc {
+            font-size: 1.1rem;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-family: 'Urbanist', sans-serif;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 3px solid var(--primary);
+            margin-top: 2rem;
+            background: #111;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-title {
+            font-family: 'Bungee', cursive;
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+            animation: logoGlow 2s infinite alternate;
+        }
+
+        .footer-desc {
+            color: #ccc;
+            line-height: 1.6;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .copyright {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        /* Audio player styling */
+        .audio-player {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 153, 0, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 153, 0, 0);
+            }
+        }
+
+        .audio-player:hover {
+            opacity: 1;
+            animation: none;
+        }
+
+        .audio-player i {
+            color: var(--dark);
+            font-size: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .splash-logo {
+                font-size: 3rem;
+            }
+            
+            .welcome-text {
+                font-size: 1.2rem;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 15px;
+                padding: 1rem;
+            }
+            
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .photo-title {
+                font-size: 1.1rem;
+            }
+            
+            .photo-desc {
+                font-size: 0.8rem;
+            }
+            
+            .modal-content {
+                max-width: 95%;
+                margin: 5% auto;
+            }
+            
+            .modal-title {
+                font-size: 1.4rem;
+            }
+            
+            .modal-desc {
+                font-size: 1rem;
+            }
+            
+            .close {
+                font-size: 30px;
+                top: 15px;
+                right: 20px;
+            }
+            
+            .footer-title {
+                font-size: 1.5rem;
+            }
+            
+            .footer-desc {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div class="splash-screen">
+        <div class="splash-logo">DEEP SAMP</div>
+        <div class="welcome-text">MR7BA BIK KBIRA</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <audio id="backgroundMusic" loop>
+            <source src="https://cdn.discordapp.com/attachments/1383334140111224925/1383396271041019974/El_Azhar_-_El_Djihad_Slowed_Reverb_nasheed.mp3?ex=684ea3ad&is=684d522d&hm=f926093f6e7157e98cbd665b3b4a210e72a892f08206218684bea39e7001920d&" type="audio/mpeg">
+        </audio>
+
+        <div class="audio-player" id="audioControl">
+            <i class="fas fa-music"></i>
+        </div>
+
+        <header>
+            <div class="logo">DEEP SAMP</div>
+        </header>
+
+        <div class="gallery">
+            <!-- Photo cards remain the same as before -->
+            <!-- Photo 1 -->
+            <div class="photo-card" style="--order: 1;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334264174547116/simba_3.jpg?ex=684e69ed&is=684d186d&hm=ef12f6368951bb41990a6a7fe470db335c9fd4057f7046220b09f23511e72c87&=&format=webp&width=490&height=873" class="photo-img" alt="Simba Street Art">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">SIMBA / 1</div>
+                    <div class="photo-desc">Hada Simba Gangster Dial 10 Drial</div>
+                </div>
+            </div>
+
+            <!-- Photo 2 -->
+            <div class="photo-card" style="--order: 2;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334374237540414/loydd_gaaaaang.jpg?ex=684e6a07&is=684d1887&hm=e9e87ea4fff79f5fd4793ee89ad85aa5fb6d149ce618d0a58b78b2c75bcb372b&=&format=webp&width=364&height=364" class="photo-img" alt="Urban Alley">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">LOYD</div>
+                    <div class="photo-desc">Hada Loyd Lholm Dialo Iwali S7i7 Wlkin 9atlo Tkfat F Sahd Dial Rachidia</div>
+                </div>
+            </div>
+
+            <!-- Photo 3 -->
+            <div class="photo-card" style="--order: 3;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334340695556107/diablo.png?ex=684e69ff&is=684d187f&hm=e24ec08788fc7a8d60b939c9db7c23b7321c89039f6660714aaa054f7013e71b&=&format=webp&quality=lossless&width=488&height=276" class="photo-img" alt="Neon Nights">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">DIABLO</div>
+                    <div class="photo-desc">Hada Diablo Hyato Gha Samp Wjho Ki Zab L7olm Dialo Itsa7ab </div>
+                </div>
+            </div>
+
+            <!-- Photo 4 -->
+            <div class="photo-card" style="--order: 4;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383334260718440498/rashford_hh.png?ex=684e69ec&is=684d186c&hm=5abcd0fe67cc108db9ff06685008d3b066633d8f3553718325757f06b907cbe8&" class="photo-img" alt="Rebel Walls">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">RACHFORD</div>
+                    <div class="photo-desc">Hada Rachford Brhoch D 2010 Hyato Kamla Samp Ou Cheat Tgolih Nhwi Khtak Ou n3tik Cheat Samp Igolik Mrhba</div>
+                </div>
+            </div>
+
+            <!-- Photo 5 -->
+            <div class="photo-card" style="--order: 5;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383334342461489162/vegas.png?ex=684e6a00&is=684d1880&hm=27200bf959928de5fe1d8bab11841096e57f9727c6b272ef8797dd9aeb273dca&" class="photo-img" alt="Market Day">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">VEGAS / LUCAS</div>
+                    <div class="photo-desc">Hada Kol Mra Mbadal Smiya 3robi Wld L9 Khto Souaad F Canada 9hba Dwna Biha W9ita Ou L7naha</div>
+                </div>
+            </div>
+
+            <!-- Photo 6 -->
+            <div class="photo-card" style="--order: 6;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383334262001897472/bigscar.jpg?ex=684e69ed&is=684d186d&hm=a172e6d12cad5c023ccd2d899c216cb7282e55b2017fd05f6d8af233bba70849&" class="photo-img" alt="Concrete Jungle">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">BIGSCAR / BIGHMAR</div>
+                    <div class="photo-desc">Hada Lkyout Dial Samp Wjho Ki Zitona Sghiwar 3ych B Clownfish Rah Chratlih Khto Pc Bach Il3ab Fivem</div>
+                </div>
+            </div>
+
+            <!-- Photo 7 -->
+            <div class="photo-card" style="--order: 7;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383334261544849489/jossef.jpg?ex=684e69ed&is=684d186d&hm=b3b9361fdfa1b12fed151aba2e874eaa36f40e0dd71440a7f4b46c05a39fe26d&" class="photo-img" alt="Urban Style">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">JOSSEF KND</div>
+                    <div class="photo-desc">Hada Jossef Tla9a M3a L9hab D Kindred Ou Glboh 3la Rasso Ou Mlsso Lih Khriza / part 2 tswira</div>
+                </div>
+            </div>
+
+            <!-- Photo 8 -->
+            <div class="photo-card" style="--order: 8;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383334261175615619/jossef_2.jpg?ex=684e69ec&is=684d186c&hm=27f9442ec628a2826fe7919432bbf06268b69c5ac3abf84bcaea7f53d0d3643d&" class="photo-img" alt="Skyline Dreams">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">JOSSEF PART 2</div>
+                    <div class="photo-desc">Ha Jossef Hazino Mn Trima Ou Galbino A Wdeee</div>
+                </div>
+            </div>
+
+            <!-- Photo 9 -->
+            <div class="photo-card" style="--order: 9;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334264501960787/3BI9A.png?ex=684e69ed&is=684d186d&hm=22118e8ca2bfc3ab03aa1d0169dc092ce5599b0cc28b2581bf9cb8c3552ce69e&=&format=webp&quality=lossless&width=192&height=350" class="photo-img" alt="Wall Poetry">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">3BI9A</div>
+                    <div class="photo-desc">Hada Chmikir Dial Kindred Famo Ki Tabon 3aych Gha Bl7chich Ou Ztla Lahla I3fo 3lih</div>
+                </div>
+            </div>
+
+            <!-- Photo 10 -->
+            <div class="photo-card" style="--order: 10;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334344734801951/guts.png?ex=684e6a00&is=684d1880&hm=a5e3737a292184c5dc6d2b546a21f4b059afa3dd8b57d85b842cf7e41a33bb21&=&format=webp&quality=lossless&width=315&height=523" class="photo-img" alt="Electric Dreams">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">GUTS MEXICANO</div>
+                    <div class="photo-desc">Hada Khl3ni Fmo Kolo Chrajam 3ndo Ska Dial Tran Fi Fomo Kla Dial Samp</div>
+                </div>
+            </div>
+
+            <!-- Photo 11 -->
+            <div class="photo-card" style="--order: 11;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334263642001458/simba_4.jpg?ex=684e69ed&is=684d186d&hm=caa8bf3c787ec8eb73dee103b2c64f43679bb30fc65a9bb55c1efcea30483839&=&format=webp&width=490&height=873" class="photo-img" alt="Urban Faces">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">SIMBA / PART 2</div>
+                    <div class="photo-desc">Hantoma Simba Bgha Zab B9at F Clownfish Wjhak Ki zab Ou Zaml Mn Lfo9</div>
+                </div>
+            </div>
+
+            <!-- Photo 12 -->
+            <div class="photo-card" style="--order: 12;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383368465334796369/micheal_profile.png?ex=684e89c7&is=684d3847&hm=97906c3313b3cfa1f6d4c55badb3c3e30bf3144c5b9c78811fad381ca307f52c&" class="photo-img" alt="Moving Canvas">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">MICHAEL OWNER PARADOX</div>
+                    <div class="photo-desc">Had Zaml Hanhot Likom Tswirto F Part 2 B3lok 3aych B Clownfish</div>
+                </div>
+            </div>
+
+            <!-- Photo 13 -->
+            <div class="photo-card" style="--order: 13;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383369600745476106/michael_hhhh.png?ex=684e8ad6&is=684d3956&hm=c0a3efb89a24cc13a2a7632afa4c79c0038f81eea8faa0179aa9224a743d6f3d&" class="photo-img" alt="Midnight Passage">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">MICHAEL OWNER PARADOX / PART 2</div>
+                    <div class="photo-desc">Ha Howa Dak Zaml Owner Paradox Michael Wld L9hba Dyr Fiha Boss Mafia Wld L9hba Howa Gha 97yba</div>
+                </div>
+            </div>
+
+            <!-- Photo 14 -->
+            <div class="photo-card" style="--order: 14;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383368465863282698/saad_jack.png?ex=684e89c8&is=684d3848&hm=4b075e23fa6c2363c91562bce940f72af223092b7e50fc7cd14713598c1d8c12&" class="photo-img" alt="Urban Steps">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">SAAD ADMIN PARADOX</div>
+                    <div class="photo-desc">Had Zbi Howa Li 3al Lissar Ou Had Khona Howa Jack Hado Khout Mn Mra Whda Ou Kol Wahd 3ndo Bah Mhom 9hba</div>
+                </div>
+            </div>
+
+            <!-- Photo 15 -->
+            <div class="photo-card" style="--order: 15;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383368465028485130/loyed_9ra3.png?ex=684e89c7&is=684d3847&hm=5baebeaa585b80a3ac916efbfe319c89e73448e8c736bafb1e8ae7cb32fd8e89&" class="photo-img" alt="Silhouette City">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">LOYD / PART 2</div>
+                    <div class="photo-desc">Hantoma Gangster Sal3oss Jakom B Style Jdid</div>
+                </div>
+            </div>
+
+            <!-- Photo 16 -->
+            <div class="photo-card" style="--order: 16;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383366830818852944/SPOILER_morodev.png?ex=684e8842&is=684d36c2&hm=0d1e05a01f482b4bd18414e28ea35d634d238db4e7a4bc91650f71b0cae7513b&" class="photo-img" alt="Urban Rider">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">GUZMAN ADMIN PARADOX</div>
+                    <div class="photo-desc">Hada Guzman Wahd Lghlid Kant 7yato Gha Samp 9bal Ma Mo Thazo Ou Tssifto L Russia</div>
+                </div>
+            </div>
+
+            <!-- Photo 17 -->
+            <div class="photo-card" style="--order: 17;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383371856634974278/sanfor.png?ex=684e8cf0&is=684d3b70&hm=ec22009671430250500cb52159d387a17023ff3467a2f09f136f3d5001422b3e&" class="photo-img" alt="River Crossing">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">SANFOR KND</div>
+                    <div class="photo-desc">Hada Dak Brhoch Dial Sanfor Li Kan Ki Dir Fiha 3ami9 Ou Kda Ou Db Wslna Message Bli Mo Hrssat Lih Pc</div>
+                </div>
+            </div>
+
+            <!-- Photo 18 -->
+            <div class="photo-card" style="--order: 18;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334262798946316/thomas.jpg?ex=684e69ed&is=684d186d&hm=5219e69c0910374043f6afa4ed5f85d3f33ed825cc80b8de381b416d7f9dd4c5&=&format=webp&width=193&height=358" class="photo-img" alt="Mirror City">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">THOMAS SHELBY HH</div>
+                    <div class="photo-desc">Hada Wahd L7chaychi Akhor Dyr Rasso Gangster Howa Khto Salma Mssahba M3a Yassin Flipo Flwlfa HHHH</div>
+                </div>
+            </div>
+
+            <!-- Photo 19 -->
+            <div class="photo-card" style="--order: 19;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334341064658965/pasnas.png?ex=684e6a00&is=684d1880&hm=ded62f9b518351a407eb44cbda64d5be31fa51a3055127bdf6d73a53065265a7&=&format=webp&quality=lossless&width=421&height=243" class="photo-img" alt="Ancient Portal">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">PAS NASS</div>
+                    <div class="photo-desc">Hada Kla Ta3 Samp B7alo B7al Khoto Samp Ou Kda</div>
+                </div>
+            </div>
+
+            <!-- Photo 20 -->
+            <div class="photo-card" style="--order: 20;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334264883384441/silva.png?ex=684e69ed&is=684d186d&hm=cfc2bb481a9f58c0dd9770cd743bf2e4c12b6b857d2df2ef529bf0fc09b8e247&=&format=webp&quality=lossless&width=717&height=526" class="photo-img" alt="City Celebration">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">SILVA</div>
+                    <div class="photo-desc">Hada Wahd Kla M3a Khoto Mskin Fih Sida Hwa Khto Ou 3adaha D3iw M3ahom</div>
+                </div>
+            </div>
+
+            <!-- Photo 21 -->
+            <div class="photo-card" style="--order: 21;">
+                <div class="photo-img-container">
+                    <img src="https://media.discordapp.net/attachments/1383334140111224925/1383334263268577332/simba_5.jpg?ex=684e69ed&is=684d186d&hm=7dbd8db1cee0fbe4092ab5c01365003b9f1f4c8fada1c16d3102bc7dcca02387&=&format=webp&width=490&height=873" class="photo-img" alt="Liquid City">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">SIMBA / PART 3</div>
+                    <div class="photo-desc">Iwa Tswira Akhra Ta3 7bibna Simba Rasso m9ayam Ou Sma7 Lina Khay Simba</div>
+                </div>
+            </div>
+
+            <!-- Photo 22 -->
+            <div class="photo-card" style="--order: 22;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383375283020628039/mugel.png?ex=684e9021&is=684d3ea1&hm=44fdbb31f2816c7c4fc5b8472d47744312246b514cb8c5970ee97b1591966ed3&" class="photo-img" alt="Urban Stencil">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">Mugel</div>
+                    <div class="photo-desc">Hada Wahd Zbi 3aych B Tele Ou T3biaa Ou Samp Ri7t Snan 3tya Mn Howara Fin Sakn</div>
+                </div>
+            </div>
+
+            <!-- Photo 23 -->
+            <div class="photo-card" style="--order: 23;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383376011340550236/splinter.png?ex=684e90ce&is=684d3f4e&hm=fd3b380f8b06ce51266eb04742345ab26fcbd7899038c808629cd8e55589c365&" class="photo-img" alt="Underground Art">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">Splinta Owner Kindred</div>
+                    <div class="photo-desc">Hda Splinter 3ndo Marad Soua Taghdia Dima Dyr Fiha Kro M9wad Ou Howa Li Fahm Ou Howa M9wda 3lih Chomor Jab Lbak Ou 7ol Server Samp</div>
+                </div>
+            </div>
+
+            <!-- Photo 24 -->
+            <div class="photo-card" style="--order: 24;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383334373780095037/negan.png?ex=684e6a07&is=684d1887&hm=542b225e9724e4727d2eca83096b3c6b8898ff68c8964e76adc2f41b38b24238&" class="photo-img" alt="City Views">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">!NEGAN </div>
+                    <div class="photo-desc">Hada Negan Wahd Kla 3aych Tahowa Gha B Tele Ou Samp Hadi Gha Rollex Ou Tkalwin Lay Ltaff</div>
+                </div>
+            </div>
+
+            <!-- Photo 25 -->
+            <div class="photo-card" style="--order: 25;">
+                <div class="photo-img-container">
+                    <img src="https://cdn.discordapp.com/attachments/1383334140111224925/1383366831871365140/Screenshot_20230801-214417_Discord.jpg?ex=684e8842&is=684d36c2&hm=af7914a1b9eaa1401ab9f516411bb23b3cfba0bb412d6f4a59e82fa823a9d274&" class="photo-img" alt="Golden Streets">
+                </div>
+                <div class="photo-info">
+                    <div class="photo-title">LOYD / PART 3</div>
+                    <div class="photo-desc">Iwa Hada Loyd Version Sodor Yamat Kan Ki7ot Rjlih 3la L7it Ktlsa9 Fih Sbagha Iwa Chhadi Dir Lhla Isahal 3Lih</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <h2 class="footer-title">DEEP SAMP</h2>
+                <p class="footer-desc">
+                    mohim hna machi 7a9din 3la had khotna hna ghir kndiro taw3iya lnass li mbliyin b taklwanit dial samp
+                    li l9a tswirto hna oula chi haja i3raf rasso bli rah hass b karo ou iwa3i rasso chwiya
+                    li ki sawal chkon hna idiha f karo hna team ta3 moharabat taklwanit 
+                </p>
+                <p class="copyright">
+                    © 2025 DEEP SAMP | MO7ARIBIN KLAWAT
+                </p>
+            </div>
+        </footer>
+
+        <div id="imageModal" class="modal">
+            <span class="close">&times;</span>
+            <div class="modal-content">
+                <div class="modal-img-container">
+                    <img class="modal-img" id="zoomedImage" alt="Enlarged view">
+                </div>
+                <div class="modal-info">
+                    <div class="modal-title" id="zoomedTitle"></div>
+                    <div class="modal-desc" id="zoomedDesc"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Audio functionality
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            const audioControl = document.getElementById('audioControl');
+            let isPlaying = false;
+
+            // Try to play music automatically (may be blocked by browser)
+            const playMusic = () => {
+                backgroundMusic.volume = 0.5;
+                const promise = backgroundMusic.play();
+                
+                if (promise !== undefined) {
+                    promise.catch(error => {
+                        // Auto-play was prevented, show the control
+                        audioControl.style.display = 'flex';
+                    }).then(() => {
+                        // Auto-play worked
+                        isPlaying = true;
+                        audioControl.innerHTML = '<i class="fas fa-pause"></i>';
+                        audioControl.style.display = 'flex';
+                    });
+                }
+            };
+
+            // Play music when user interacts with the page (to bypass autoplay restrictions)
+            const handleFirstInteraction = () => {
+                if (!isPlaying) {
+                    playMusic();
+                }
+                document.removeEventListener('click', handleFirstInteraction);
+                document.removeEventListener('keydown', handleFirstInteraction);
+            };
+
+            // Set up event listeners for first interaction
+            document.addEventListener('click', handleFirstInteraction);
+            document.addEventListener('keydown', handleFirstInteraction);
+
+            // Audio control button
+            audioControl.addEventListener('click', function() {
+                if (isPlaying) {
+                    backgroundMusic.pause();
+                    this.innerHTML = '<i class="fas fa-music"></i>';
+                    isPlaying = false;
+                } else {
+                    backgroundMusic.play();
+                    this.innerHTML = '<i class="fas fa-pause"></i>';
+                    isPlaying = true;
+                }
+            });
+
+            // Image gallery modal functionality
+            const images = document.querySelectorAll('.photo-img');
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('zoomedImage');
+            const modalTitle = document.getElementById('zoomedTitle');
+            const modalDesc = document.getElementById('zoomedDesc');
+            const closeBtn = document.querySelector('.close');
+
+            // Function to open modal with smooth transition
+            function openModal(imgSrc, title, desc) {
+                modalImg.src = imgSrc;
+                modalImg.alt = title;
+                modalTitle.textContent = title;
+                modalDesc.textContent = desc;
+                
+                // Trigger reflow to enable transition
+                void modal.offsetWidth;
+                
+                modal.classList.add('show');
+                document.body.style.overflow = "hidden";
+            }
+
+            // Function to close modal with smooth transition
+            function closeModal() {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.style.display = "none";
+                }, 300); // Match this with CSS transition duration
+                document.body.style.overflow = "auto";
+            }
+
+            // Add click event to all images
+            images.forEach(img => {
+                img.addEventListener('click', function() {
+                    const card = this.closest('.photo-card');
+                    modal.style.display = "block";
+                    setTimeout(() => {
+                        openModal(
+                            this.src,
+                            card.querySelector('.photo-title').textContent,
+                            card.querySelector('.photo-desc').textContent
+                        );
+                    }, 10);
+                });
+            });
+
+            // Close modal when clicking X
+            closeBtn.addEventListener('click', closeModal);
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // Close modal with ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && modal.classList.contains('show')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
