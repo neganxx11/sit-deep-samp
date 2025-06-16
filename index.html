@@ -1,143 +1,1055 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>DEEP SAMP</title>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: #000;
-      overflow: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #aaa;
-    }
-
-    .center-text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 3rem;
-      font-weight: bold;
-      color: #888;
-      animation: pulse 3s ease-in-out infinite;
-      z-index: 2;
-      text-align: center;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        text-shadow: 0 0 10px #666;
-      }
-      50% {
-        text-shadow: 0 0 20px #aaa;
-      }
-    }
-
-    .footer {
-      position: absolute;
-      bottom: 10px;
-      width: 100%;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #555;
-      z-index: 2;
-    }
-
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: block;
-      z-index: 1;
-    }
-
-    audio {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEEP SAMP</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .initial-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1.5s ease-out;
+        }
+        
+        .initial-background.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .initial-logo {
+            font-size: 4rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #8e8e8e, #5a5a5a, #8e8e8e);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 3s ease infinite;
+            background-size: 200% 200%;
+            margin-bottom: 20px;
+        }
+        
+        .welcome-text {
+            font-size: 1.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards 0.5s;
+            color: #aaa;
+        }
+        
+        .container {
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+        
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #8e8e8e;
+            box-shadow: 0 0 20px rgba(142, 142, 142, 0.5);
+            transition: all 0.5s ease;
+            animation: pulse 2s infinite;
+            pointer-events: none;
+        }
+        
+        .logo-image:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(142, 142, 142, 0.8);
+        }
+        
+        .site-name {
+            font-size: 3rem;
+            margin-top: 20px;
+            background: linear-gradient(45deg, #939697, #5a5a5a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(142, 142, 142, 0.3);
+        }
+        
+        .structures-section {
+            margin-bottom: 50px;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #8b9294;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #8e8e8e, transparent);
+            bottom: -10px;
+            left: 25%;
+        }
+        
+        .structures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .structure-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(142, 142, 142, 0.2);
+        }
+        
+        .structure-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(142, 142, 142, 0.4);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .structure-image-container {
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .structure-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            pointer-events: none;
+        }
+        
+        .structure-card:hover .structure-image {
+            transform: scale(1.1);
+        }
+        
+        .structure-name {
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            background: rgba(142, 142, 142, 0.2);
+        }
+        
+        .structure-description {
+            padding: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #ccc;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+            animation: zoomIn 0.3s ease;
+        }
+        
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 5px;
+            box-shadow: 0 0 30px rgba(146, 147, 148, 0.5);
+            pointer-events: none;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: -40px;
+            right: -10px;
+            color: #fff;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            transform: rotate(90deg);
+            color: #989999;
+        }
+        
+        .modal-caption {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .about-section {
+            background: rgba(142, 142, 142, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 50px;
+            border-left: 3px solid #969b9c;
+            backdrop-filter: blur(5px);
+        }
+        
+        .about-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #8e8e8e;
+        }
+        
+        .about-text {
+            line-height: 1.6;
+            color: #ddd;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+        
+        .footer-text {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        /* Anti-screenshot overlay */
+        .anti-screenshot-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            z-index: 999999999;
+            display: none;
+            pointer-events: none;
+        }
+        
+        /* Fullscreen button */
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(142, 142, 142, 0.3);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(142, 142, 142, 0.5);
+        }
+        
+        .fullscreen-btn:hover {
+            background: rgba(142, 142, 142, 0.5);
+            transform: scale(1.1);
+        }
+        
+        .fullscreen-btn i {
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        
+        /* Fullscreen styles */
+        :fullscreen {
+            background-color: #000;
+        }
+        
+        :-webkit-full-screen {
+            background-color: #000;
+        }
+        
+        :-moz-full-screen {
+            background-color: #000;
+        }
+        
+        /* No-scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(143, 147, 148, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(143, 147, 148, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(143, 147, 148, 0);
+            }
+        }
+        
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .initial-logo {
+                font-size: 2.5rem;
+            }
+            
+            .welcome-text {
+                font-size: 1.2rem;
+            }
+            
+            .site-name {
+                font-size: 2rem;
+            }
+            
+            .structures-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                max-width: 95%;
+            }
+            
+            .modal-close {
+                top: -30px;
+                right: 0;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Anti-screenshot overlay -->
+    <div class="anti-screenshot-overlay" id="antiScreenshotOverlay"></div>
+    
+    <div id="particles-js"></div>
+    
+    <div class="initial-background" id="initialBackground">
+        <div class="initial-logo">DEEP SAMP</div>
+        <div class="welcome-text">Mr7ba Bal Jami3</div>
+    </div>
+    
+    <div class="container" id="mainContent">
+        <header>
+            <div class="logo-container">
+                <img src="https://i.postimg.cc/fb8cC6tJ/Lama-Arkad-Chubanov.jpg" alt="DEEP SAMP Logo" class="logo-image">
+                <h1 class="site-name">DEEP SAMP</h1>
+            </div>
+        </header>
+        
+        <section class="structures-section">
+            <h2 class="section-title">Klawat Hachakom</h2>
+            <div class="structures-grid" id="structuresGrid">
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/4ykmQ55Y/micheal-profile.png" alt="Michael Owner Paradox" class="structure-image">
+                    </div>
+                    <div class="structure-name">Michael Owner Paradox</div>
+                    <div class="structure-description">Hada Michael Ghazi Smito Nawfal Owner Paradox Part 2 Hnhot Tswirto</div>
+                </div>
 
-  <div class="center-text">DEEP SAMP SOON</div>
-  <div class="footer">Dev by ARKADHILIONDEZMIRICANO</div>
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/fRFX0wYT/michael-hhhh.png" alt="Michael Owner Paradox / Part 2" class="structure-image">
+                    </div>
+                    <div class="structure-name">Michael Owner Paradox / Part 2</div>
+                    <div class="structure-description">Hada Hbibna Michael Smito Nawfal B7alo B7al Taloni Smiya Mbyna L3rbon 3aych B Clownfish Ou Mo Ktsraf 3lih</div>
+                </div>
 
-  <canvas id="particles"></canvas>
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/7PjS61rJ/loydd-gaaaaang.jpg" alt="LOYD LKLA HH" class="structure-image">
+                    </div>
+                    <div class="structure-name">LOYD LKLA HH</div>
+                    <div class="structure-description">Loyd 9ahro Sahd Mskin F Rachidia L7olm Dialo Iwali Gangster Ta3 Rachidia</div>
+                </div>
 
-  <!-- 🔊 Audio auto-play -->
-  <audio id="bgMusic" autoplay loop>
-    <source src="https://files.catbox.moe/ocf2xa.mp3" type="audio/mpeg">
-    Your browser does not support the audio element.
-  </audio>
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/bvYtM3kW/loyed-9ra3.png" alt="LOYD LKLA / PART 2" class="structure-image">
+                    </div>
+                    <div class="structure-name">LOYD LKLA / PART 2</div>
+                    <div class="structure-description">PArt 2 Dial Loyd Lgangsta 3rgan Ki Hot Rjlo 3la L7it Ktlsa9 Fih Sbagha Lay Star</div>
+                </div>
 
-  <script>
-    const canvas = document.getElementById("particles");
-    const ctx = canvas.getContext("2d");
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/W3hJpz97/SPOILER-morodev.png" alt="GUZMAN ADMIN PARADOX" class="structure-image">
+                    </div>
+                    <div class="structure-name">GUZMAN ADMIN PARADOX</div>
+                    <div class="structure-description">Hada Guzman Wahd Lghlid Mchat Khto Hzato Bach Tkhlass 3lih Imchi L Russia A Wdee</div>
+                </div>
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/6QF3B0FM/simba-3.jpg" alt="Simba Hachak" class="structure-image">
+                    </div>
+                    <div class="structure-name">SIMBA HACHAK</div>
+                    <div class="structure-description">Hada Simba Gangster Dialna Ta3 10 Drial Takhazoz Ou Kda HHh</div>
+                </div>
 
-    let particlesArray = [];
-    const colors = ["#555", "#666", "#777", "#888"];
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/s22MK1RR/simba-9lawi.png" alt="SIMBA / PART 2" class="structure-image">
+                    </div>
+                    <div class="structure-name">SIMBA / PART 2</div>
+                    <div class="structure-description">Iwa Hntoma 3la Simba Wla Wa7d Akhor Wlkin Rah Gangster Dial 4 Drial HH</div>
+                </div>
 
-    class Particle {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.radius = Math.random() * 2 + 0.5;
-        this.color = colors[Math.floor(Math.random() * colors.length)];
-        this.speed = Math.random() * 0.5 + 0.2;
-      }
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/prMXNL3r/rashford-hh.png" alt="RASHFORD HACHAK" class="structure-image">
+                    </div>
+                    <div class="structure-name">RACHFORD HACHAK</div>
+                    <div class="structure-description">Hada Rashford Tgolih T3tini Mamak Ou N3tik Cheat Igolik Mr7ba</div>
+                </div>
 
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-      }
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/VNSYdt85/saad-jack.png" alt="SAAD ADMIN PARADOX" class="structure-image">
+                    </div>
+                    <div class="structure-name">SAAD ADMIN PARADOX</div>
+                    <div class="structure-description">Hada Saad Li 3al Lissar Ou Li 7dah Jack Khoh Ghir Mn Mo Msakn Mhom Walda M3a Joj Rajala L7ayat S3iba</div>
+                </div>
 
-      update() {
-        this.y += this.speed;
-        if (this.y > canvas.height) {
-          this.y = 0;
-          this.x = Math.random() * canvas.width;
-        }
-        this.draw();
-      }
-    }
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/595fY1Z5/bigscar.jpg" alt="BIGSCAR LCUT DIALNA" class="structure-image">
+                    </div>
+                    <div class="structure-name">BIGSCAR LCUT DIALNA</div>
+                    <div class="structure-description">Hada Big Scar Lcut Dial Samp Gangster Dial Marackech Lay Star</div>
+                </div>
 
-    function initParticles() {
-      particlesArray = [];
-      for (let i = 0; i < 150; i++) {
-        particlesArray.push(new Particle());
-      }
-    }
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/bwrPBndL/thomas.jpg" alt="THOMAS SHELBY" class="structure-image">
+                    </div>
+                    <div class="structure-name">THOMAS SHELBY</div>
+                    <div class="structure-description">Hada Wahd Lkla Dial Knd Ou Paradox Galik Rah Boss Dial Gang Lay Star Ou Hwa Gha Ztayli</div>
+                </div>
 
-    function animateParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 0; i < particlesArray.length; i++) {
-        particlesArray[i].update();
-      }
-      requestAnimationFrame(animateParticles);
-    }
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/C1TV5676/lucass-lmkhzaz.png" alt="LUCASS / VEGAS" class="structure-image">
+                    </div>
+                    <div class="structure-name">LUCAS / VEGAS</div>
+                    <div class="structure-description">Iwa Hada Lucas Wjho Ki L7mar Galo Lih Wrina WjK Wrahom Wjah Lhmara Iwa Lay Star Mantchfawch</div>
+                </div>
 
-    initParticles();
-    animateParticles();
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/Ss6bM7tQ/jossef.jpg" alt="JOSSEF GALIK HH" class="structure-image">
+                    </div>
+                    <div class="structure-name">JOSSEF GALIK HH</div>
+                    <div class="structure-description">Hada Jossef Admin Knd Iwa Wahd Nhar 9lboh 3la Rasso Ou malsoha lih hjbano B7al Lfrakh Dial L9iraa HH</div>
+                </div>
 
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      initParticles();
-    });
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/bNNfZn08/jossef-2.jpg" alt="JOSSEF / PART 2" class="structure-image">
+                    </div>
+                    <div class="structure-name">JOSSEF / PART 2</div>
+                    <div class="structure-description">Iwa Jossef Mskin Galbino Lay Star Chado Ktiaab Ldaba Hitach Splinter Khcha Ido F Zko</div>
+                </div>
 
-    // Try force audio autoplay (some browsers may block)
-    window.addEventListener("click", () => {
-      const audio = document.getElementById("bgMusic");
-      audio.play().catch(() => {});
-    });
-  </script>
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/qvSPDZPM/diablo.png" alt="DIABLO HACHAK" class="structure-image">
+                    </div>
+                    <div class="structure-name">DIABLO HACHAK</div>
+                    <div class="structure-description">Hada Diablo Hachak Mskin M39ad Hit Wjho Ki Tab Makitsahabch Iwa Chhadir L7olm Dialo Iyakhod Pc Gamer</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/TPbZzJxj/pasnas.png" alt="PASNAS" class="structure-image">
+                    </div>
+                    <div class="structure-name">PASNAS</div>
+                    <div class="structure-description">Hada Pasnas Wahd Lkla Tahowa Dial Rp D3iw M3a Khto Mchdoda Bsbab Lfassad</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/VvKTq79w/3BI9A.png" alt="3BI9A KND" class="structure-image">
+                    </div>
+                    <div class="structure-name">3BI9A KND</div>
+                    <div class="structure-description">Hada 3bi9a Mskin Wahd Lhchaychi Mabli Ou Kmawh Dfar Ta Tfarbal D3iw M3ah</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/kX5LJm9g/negan.png" alt="NEGAN HACHAK" class="structure-image">
+                    </div>
+                    <div class="structure-name">NEGAN HACHAK</div>
+                    <div class="structure-description">Hada Negan Wahd Lkla Tahowa Hadi Gha Rp Z3ma Rah Gangster Lay Star Wjho Ki Tab</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/zGbMhFym/mugel.png" alt="MUGEL GALIK" class="structure-image">
+                    </div>
+                    <div class="structure-name">MUGEL GALIK</div>
+                    <div class="structure-description">Hada Mugel Hachak Mtko M3a Wahd L3zi Ki Khbat Fih F Discord Lay Star B9a Fiya Mskin</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/rsZn0DcF/silva.png" alt="SILVA" class="structure-image">
+                    </div>
+                    <div class="structure-name">SILVA</div>
+                    <div class="structure-description">Iwa Hada Silva Wahd Lkla Raybin Lih Snano Mskin Iwa Rah Gha Kla Dial Samp Donc lay 3fo 3lih</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/hjybMNY2/pikaso-2.png" alt="PIKASO MBLOCK" class="structure-image">
+                    </div>
+                    <div class="structure-name">PIKASSO MBLOCK</div>
+                    <div class="structure-description">Hada Wahd Lkla Dial Fivem Gang Mblock Ou Kda Wld 2009 Mrakchi Habo 9atlo Gha Sahd Ou Ki Golik Gangster HH</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/Y0vNPbKM/pikaso.png" alt="PIKASO MBLOCK / PART 2" class="structure-image">
+                    </div>
+                    <div class="structure-name">PIKASO MBLOCK / PART 2</div>
+                    <div class="structure-description">Iwa Pikasso Jakom B Lock Jdid Gangster Dial Marackech Lay Star HHH MBLOCK</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/6qFVxntR/zizon-apah.png" alt="ZIZON APAH HH" class="structure-image">
+                    </div>
+                    <div class="structure-name">ZIZON APAH HH</div>
+                    <div class="structure-description">Hada Zizon Apah Wahd Lkla DIal Fivem Dyr Rasso Chmkar Z3ma Howa Sigar Dial Drham 3mro Daro Fi Famo</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/L6ZBBC3V/zino.png" alt="ZINO HALAWLAW MOL AIMBOT" class="structure-image">
+                    </div>
+                    <div class="structure-name">ZINO HALAWLAW MOL AIMBOT</div>
+                    <div class="structure-description">Hada Zino Mol Aimbot Hh Wahd Jazairi Mskin Fih Marad Somna Ou K7al Dar Mo7awalat Inti7ar 2 Marat Ou 3t9oh</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/N0b1fWQQ/simba-4.jpg" alt="SIMBA / PART 3" class="structure-image">
+                    </div>
+                    <div class="structure-name">SIMBA / PART 2</div>
+                    <div class="structure-description">Iwa Kima Ktchofo M3ana Khtna Simba Dart Lik Makiyaj Bach Dbar 3la Rasha Lay Shal 3liha</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/KzRJXZB6/LGRANDE-MORNINGSTAR-v2.jpg" alt="LGRANDE MORNINGSTAR" class="structure-image">
+                    </div>
+                    <div class="structure-name">LGRANDE MORNINGSTAR</div>
+                    <div class="structure-description">Lay Star Had Dri Kan Kidrab Mo 3la Hssab T3tih Floss Bach Iyakhod Admin F Rollex</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/XY4LjK9c/LGRANDE-MORNINGSTAR-v3.png" alt="LGRANDE MORNINGSTAR / PART 2" class="structure-image">
+                    </div>
+                    <div class="structure-name">LGRANDE MORNINGSTAR / PART 2</div>
+                    <div class="structure-description">Hadi Tswira Tanya Dial Mskhot Mo Lgrande Lay Lgiha Lih</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/y600Dg1f/mayoniz.png" alt="MAYONIZ GANGSHIT" class="structure-image">
+                    </div>
+                    <div class="structure-name">MAYONIZ GANGSHIT</div>
+                    <div class="structure-description">Iwa Hada Mayoniz Msawar Lik M3a Khto Salma Li Kathzo Mskina Bach Tsraf 3lihom Lay Star</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/1tQ52zkt/sanfor.png" alt="SANFOR KND" class="structure-image">
+                    </div>
+                    <div class="structure-name">SANFOR KND</div>
+                    <div class="structure-description">Iwa Hada Wahd Rass Toba Wjho Ki Lfar Ta Howa Dayr Fiha Rasso 3ami9 Ou Kda Lay Star Ou Howa Ki Zab</div>
+                </div>
+
+                <div class="structure-card">
+                    <div class="structure-image-container">
+                        <img src="https://i.postimg.cc/LX36ppSV/perma-2.png" alt="PERMA HACHAK" class="structure-image">
+                    </div>
+                    <div class="structure-name">PERMA HACHAK</div>
+                    <div class="structure-description">Iwa Hada Wahd Lkla Dial Samp Hachak Tahowa 3aych 7ayat Dial Gangster Z3ma Dial Howara</div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="about-section">
+            <h2 class="about-title">About DEEP SAMP</h2>
+            <p class="about-text">
+                DEEP SAMP Howa Wahd Siteweb Li Kit7ato Fih Klawat Li Taghyin F Discord Ou Rp Samp / Fivem. 
+                Mohim Ila L9iti Tswirtak Hna 3raf Rassak Akbar Wld L9 Ou Zyar Samta 9bal Manjiw Nzyroha Lik. 
+                Li Bgha I 7at Tswira Dial Chi Wahd Taghi I Doz Discord Ou IFta7 Ticket | https://discord.gg/YDbcX2dx6G.
+            </p>
+        </section>
+        
+        <footer>
+            <p class="footer-text">© 2025 DEEP SAMP | DEV BY ARKADHILIONDEZMIRIKANO</p>
+        </footer>
+    </div>
+    
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <span class="modal-close" id="modalClose">&times;</span>
+            <img src="" alt="" class="modal-image" id="modalImage">
+            <div class="modal-caption" id="modalCaption"></div>
+        </div>
+    </div>
+    
+    <!-- Fullscreen button -->
+    <div class="fullscreen-btn" id="fullscreenBtn">
+        <i class="fas fa-expand"></i>
+    </div>
+    
+    <audio id="backgroundMusic" loop>
+        <source src="https://files.catbox.moe/ocf2xa.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <script>
+        // Initialisation de particles.js
+        particlesJS('particles-js', {
+            "particles": {
+                "number": {
+                    "value": 80,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#8e8e8e"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#8e8e8e",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 2,
+                    "direction": "none",
+                    "random": true,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "grab"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 140,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200,
+                        "duration": 0.4
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+
+        // Gestion de la musique de fond
+        document.addEventListener('DOMContentLoaded', function() {
+            const music = document.getElementById('backgroundMusic');
+            music.volume = 0.3;
+            
+            // Stratégie de lecture automatique
+            function startMusic() {
+                // Tentative initiale
+                const playPromise = music.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        // Tentative après animation si échec initial
+                        setTimeout(() => {
+                            music.play().catch(() => {
+                                // Fallback au premier clic
+                                document.addEventListener('click', () => {
+                                    music.play();
+                                }, { once: true });
+                            });
+                        }, 3500);
+                    });
+                }
+            }
+            
+            // Démarrer la musique après un léger délai
+            setTimeout(startMusic, 500);
+            
+            // Gestion de l'animation d'accueil
+            setTimeout(function() {
+                const initialBackground = document.getElementById('initialBackground');
+                const mainContent = document.getElementById('mainContent');
+                
+                initialBackground.classList.add('fade-out');
+                
+                setTimeout(function() {
+                    initialBackground.style.display = 'none';
+                    mainContent.style.display = 'block';
+                }, 1500);
+            }, 3000);
+            
+            // Gestion des modales d'image
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalCaption = document.getElementById('modalCaption');
+            const modalClose = document.getElementById('modalClose');
+            const structureCards = document.querySelectorAll('.structure-card');
+            
+            structureCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const imgSrc = this.querySelector('img').src;
+                    const title = this.querySelector('.structure-name').textContent;
+                    modalImage.src = imgSrc;
+                    modalCaption.textContent = title;
+                    modal.classList.add('active');
+                    document.body.classList.add('modal-open');
+                });
+            });
+            
+            modalClose.addEventListener('click', closeModal);
+            
+            function closeModal() {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+            
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+            
+            // Fullscreen functionality
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+            
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                    });
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                    }
+                }
+            }
+            
+            // Update fullscreen button icon when exiting fullscreen with ESC
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement) {
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                }
+            });
+            
+            // Activer le plein écran automatiquement après le chargement
+            function activateFullscreen() {
+                try {
+                    const element = document.documentElement;
+                    if (element.requestFullscreen) {
+                        element.requestFullscreen().catch(err => {
+                            console.log("Erreur fullscreen:", err);
+                        });
+                    } else if (element.mozRequestFullScreen) { /* Firefox */
+                        element.mozRequestFullScreen();
+                    } else if (element.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                        element.webkitRequestFullscreen();
+                    } else if (element.msRequestFullscreen) { /* IE/Edge */
+                        element.msRequestFullscreen();
+                    }
+                } catch (e) {
+                    console.log("Erreur fullscreen:", e);
+                }
+            }
+            
+            // Démarrer en plein écran après un léger délai (pour compatibilité)
+            setTimeout(activateFullscreen, 1000);
+            
+            // Réessayer si le plein écran échoue (certains navigateurs bloquent au chargement)
+            document.addEventListener('click', function() {
+                if (!document.fullscreenElement) {
+                    activateFullscreen();
+                }
+            });
+            
+            // Anti-screenshot/recording protection
+            const antiScreenshotOverlay = document.getElementById('antiScreenshotOverlay');
+            
+            // Detect screenshot attempts (works on some browsers/devices)
+            document.addEventListener('keydown', function(e) {
+                // Detect common screenshot shortcuts
+                if ((e.ctrlKey && e.key === 'PrintScreen') || 
+                    (e.key === 'PrintScreen') || 
+                    (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4'))) {
+                    triggerAntiScreenshot();
+                }
+            });
+            
+            // Additional protection against right-click save
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                triggerAntiScreenshot();
+                return false;
+            });
+            
+            // Protection against drag-and-drop saving
+            document.addEventListener('dragstart', function(e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    triggerAntiScreenshot();
+                    return false;
+                }
+            });
+            
+            // More advanced protection - periodically check for dev tools
+            let devToolsOpened = false;
+            
+            function checkDevTools() {
+                const widthThreshold = window.outerWidth - window.innerWidth > 160;
+                const heightThreshold = window.outerHeight - window.innerHeight > 160;
+                
+                if ((widthThreshold || heightThreshold) && !devToolsOpened) {
+                    devToolsOpened = true;
+                    triggerAntiScreenshot();
+                } else if (!widthThreshold && !heightThreshold) {
+                    devToolsOpened = false;
+                }
+            }
+            
+            setInterval(checkDevTools, 1000);
+            
+            // Function to activate anti-screenshot protection
+            function triggerAntiScreenshot() {
+                antiScreenshotOverlay.style.display = 'block';
+                
+                // Flash the screen to make screenshot useless
+                antiScreenshotOverlay.style.backgroundColor = '#000';
+                setTimeout(() => {
+                    antiScreenshotOverlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+                }, 100);
+                
+                setTimeout(() => {
+                    antiScreenshotOverlay.style.display = 'none';
+                }, 2000);
+            }
+            
+            // Additional protection against screen recording (limited effectiveness)
+            // This will make the screen flash periodically which can mess up recordings
+            setInterval(() => {
+                if (document.hasFocus()) {
+                    antiScreenshotOverlay.style.display = 'block';
+                    antiScreenshotOverlay.style.backgroundColor = 'rgba(0,0,0,0.01)';
+                    setTimeout(() => {
+                        antiScreenshotOverlay.style.display = 'none';
+                    }, 50);
+                }
+            }, 30000); // Every 30 seconds
+            
+            // Protection against iframe embedding
+            if (window.self !== window.top) {
+                document.body.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:flex;justify-content:center;align-items:center;z-index:99999999;"><h1>This content cannot be embedded</h1></div>';
+            }
+        });
+    </script>
 </body>
 </html>
