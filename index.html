@@ -54,6 +54,10 @@
       display: block;
       z-index: 1;
     }
+
+    audio {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -62,6 +66,12 @@
   <div class="footer">Dev by ARKADHILIONDEZMIRICANO</div>
 
   <canvas id="particles"></canvas>
+
+  <!-- 🔊 Audio auto-play -->
+  <audio id="bgMusic" autoplay loop>
+    <source src="https://node-35.zeno.fm/p3e7ey0c1zhvv?zs=HD9cX2MnRb-Ydi-FOPgHBg" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
 
   <script>
     const canvas = document.getElementById("particles");
@@ -122,7 +132,12 @@
       canvas.height = window.innerHeight;
       initParticles();
     });
+
+    // Try force audio autoplay (some browsers may block)
+    window.addEventListener("click", () => {
+      const audio = document.getElementById("bgMusic");
+      audio.play().catch(() => {});
+    });
   </script>
 </body>
 </html>
-
